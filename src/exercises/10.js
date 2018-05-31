@@ -10,6 +10,7 @@ class Toggle extends React.Component {
   static defaultProps = {
     initialOn: false,
     onReset: () => {},
+    onTogggle: () => {},
     // Now that a user can use this component effectively without
     // an `onToggle` prop (they can use `onStateChange` instead)
     // 🐨 let's provide a default for `onToggle` and `onStateChange`
@@ -21,6 +22,20 @@ class Toggle extends React.Component {
   }
   initialState = {on: this.props.initialOn}
   state = this.initialState
+  isControlled(prop) {
+    return this.props[prop] !== undefined
+  }
+  getState(state = this.state) {
+    return Object.entries(state).reduce((newState, [key, value]) => {
+      if(this.isControlled(key)) {
+        newState[key] = this.props[key]
+      } else {
+        newState[key] = value
+      }
+      return newState
+    }, {})
+  }
+
   // 🐨 let's add an `isControlled` method that accepts a state key
   // (string) and returns true if the prop is controlled
   // 💰 this.props[prop] !== undefined
@@ -31,7 +46,9 @@ class Toggle extends React.Component {
   // 💰 You might consider accepting state as an argument that defaults
   // to `this.state`... You'll use that later on...
   internalSetState(changes, callback) {
+    let allChanges
     this.setState(state => {
+      const combinedState = this.getState(state)
       // Now that our state can actually come from two sources,
       // the `state` we receive from this function is actually only one
       // side of the story.
@@ -39,21 +56,21 @@ class Toggle extends React.Component {
       // get a `combinedState` object which we'll use to perform our
       // operations on here.
       const changesObject =
-        typeof changes === 'function' ? changes(state) : changes
+        typeof changes === 'function' ? changes(combinedState) : changes
       // now we actually need to store the whole changes
       // object for use in the callback.
       // 🐨 create a variable (`allChanges`) above the `setState` call,
       // then rather than creating the reducedChanges variable,
       // simply assign your new variable to the expression
       // on the next line:
-      const reducedChanges =
-        this.props.stateReducer(state, changesObject) || {}
+      const allChanges =
+        this.props.stateReducer(combinedState, changesObject) || {}
 
       // Next, 🐨 replace this destructuring assignment with a new one that's
       // responsible for taking the changes and returning an object
       // that only has the changes for things that are not controlled.
       // 💰 Use Object.keys(state).reduce!!
-      const {type: ignoredType, ...onlyChanges} = reducedChanges
+      const {type: ignoredType, ...onlyChanges} = allChanges
       return Object.keys(onlyChanges).length ? onlyChanges : null
 
       // When the state has successfully been set, we need to call the
