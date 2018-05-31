@@ -2,9 +2,9 @@
 
 import React from 'react'
 import {Switch} from '../switch'
-const renderSwitch = ({on, toggle}) => {
-  return <Switch on={on} onClick={toggle} />
-}
+// const renderSwitch = ({on, toggle}) => {
+//   return <Switch on={on} onClick={toggle} />
+// }
 // we're back to basics here. Rather than compound components,
 // let's use a render prop!
 class Toggle extends React.Component {
